@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Клинок и Аркана</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ══ ГЛАВНОЕ МЕНЮ ══ -->
+  <div id="menuScreen" class="screen active">
+    <canvas id="menuBg"></canvas>
+    <div class="menu-overlay">
+      <div class="menu-logo">
+        <p class="kicker">Тактическая Арена</p>
+        <h1>Клинок и Аркана</h1>
+        <p class="tagline">Выберите своего воина</p>
+      </div>
+
+      <div class="hero-select">
+        <div class="hero-card" data-hero="knight">
+          <canvas class="hero-preview" width="160" height="220"></canvas>
+          <div class="hero-info">
+            <h3>Рагнар</h3>
+            <p class="hero-class">Мечник</p>
+            <p class="hero-desc">Мощный воин с двумя мечами. Высокая броня, сильные удары в ближнем бою.</p>
+
+            <div class="hero-xp-bar"><div class="hero-xp-fill" id="xpbar-knight" style="width:0%"></div></div>
+            <button class="btn-skills" onclick="showSkillTree('knight')">🌟 Навыки <span id="sklv-knight"></span></button>
+            <button class="btn-profile">👤 Профиль</button>
+          </div>
+        </div>
+
+        <div class="hero-card" data-hero="assassin">
+          <canvas class="hero-preview" width="160" height="220"></canvas>
+          <div class="hero-info">
+            <h3>Лиора</h3>
+            <p class="hero-class">Убийца</p>
+            <p class="hero-desc">Молниеносная воительница с двумя клинками. Быстрая, но хрупкая.</p>
+
+            <div class="hero-xp-bar"><div class="hero-xp-fill" id="xpbar-assassin" style="width:0%"></div></div>
+            <button class="btn-skills" onclick="showSkillTree('assassin')">🌟 Навыки <span id="sklv-assassin"></span></button>
+            <button class="btn-profile">👤 Профиль</button>
+          </div>
+        </div>
+
+        <div class="hero-card" data-hero="mage">
+          <canvas class="hero-preview" width="160" height="220"></canvas>
+          <div class="hero-info">
+            <h3>Селена</h3>
+            <p class="hero-class">Маг</p>
+            <p class="hero-desc" id="mageDesc">Повелительница стихий. Выбери элемент и атакуй на расстоянии.</p>
+
+            <div class="hero-xp-bar"><div class="hero-xp-fill" id="xpbar-mage" style="width:0%"></div></div>
+            <button class="btn-skills" onclick="showSkillTree('mage')">🌟 Навыки <span id="sklv-mage"></span></button>
+            <button class="btn-profile">👤 Профиль</button>
+          </div>
+        </div>
+      </div>
+
+      <button id="startBtn" class="btn-start" disabled>Выбрать воина</button>
+      <button id="dungeonBtn" class="btn-start" disabled style="margin-top:8px;background:linear-gradient(135deg,#1a0828,#2d0a4e);border-color:#8844cc;box-shadow:0 0 18px #8844cc88;">⚔ Подземелье</button>
+    </div>
+  </div>
+
+  <!-- ══ КНОПКА ПРАВИЛ ══ -->
+  <button id="helpBtn" class="help-btn" title="Правила игры">?</button>
+
+  <!-- ══ МОДАЛ ПРАВИЛ ══ -->
+  <div id="helpModal" class="modal-backdrop" style="display:none">
+    <div class="modal-box">
+      <button class="modal-close" id="helpClose">×</button>
+      <h2>Руководство игрока</h2>
+
+      <div class="rules-section">
+        <div class="rules-icon">⚔️</div>
+        <div>
+          <strong>Цель</strong>
+          <p>Выживай волна за волной, побеждая всех монстров. Каждые 5 волн — босс.
+          После волны выбирай улучшение для героя.</p>
+        </div>
+      </div>
+
+      <div class="rules-section">
+        <div class="rules-icon">🏃</div>
+        <div>
+          <strong>Движение</strong>
+          <p><kbd>WASD</kbd> или <kbd>↑↓←→</kbd> — перемещение по арене.<br>
+          <kbd>Shift</kbd> — перекат с <strong>0.3 с неуязвимости</strong>. Используй чтобы уйти от удара.</p>
+        </div>
+      </div>
+
+      <div class="rules-section">
+        <div class="rules-icon">🗡️</div>
+        <div>
+          <strong>Бой</strong>
+          <p><kbd>ЛКМ</kbd> или <kbd>Пробел</kbd> — атака в ближнем бою.<br>
+          3 удара подряд — <strong>КОМБО</strong> ×2.2 урон!<br>
+          Маг атакует снарядами на расстоянии.</p>
+        </div>
+      </div>
+
+      <div class="rules-section">
+        <div class="rules-icon">✨</div>
+        <div>
+          <strong>Способности</strong>
+          <p><kbd>Q</kbd> — способность 1, <kbd>E</kbd> — способность 2.<br>
+          Каждая имеет кулдаун (чёрная полоска на иконке).</p>
+        </div>
+      </div>
+
+      <div class="rules-section">
+        <div class="rules-icon">💎</div>
+        <div>
+          <strong>Прокачка</strong>
+          <p>За убийства монстров и боссов получай ОПыт и повышай УРОВЕНь.<br>
+          Каждый уровень: <strong>+15% HP</strong>, <strong>+10% атака</strong>.
+          Монстры иногда бросают монеты 🪙 или зелье 🧄.</p>
+        </div>
+      </div>
+
+      <div class="rules-section">
+        <div class="rules-icon">👥</div>
+        <div>
+          <strong>Кооператив</strong>
+          <p>Нажми <em>"🤝 Кооп"</em> для игры вдвоём на одной клавиатуре.<br>
+          P2: <kbd>IJKL</kbd> движение, <kbd>L</kbd> атака, <kbd>U</kbd>/<kbd>O</kbd> способности, <kbd>P</kbd> перекат.</p>
+        </div>
+      </div>
+
+      <div class="rules-section">
+        <div class="rules-icon">🏙️</div>
+        <div>
+          <strong>Арены</strong>
+          <p>Арена меняется после каждой волны: <strong>Замок</strong>, <strong>Подземелье</strong>, <strong>Лес</strong>.<br>
+          Враги становятся сильнее с каждой волной.</p>
+        </div>
+      </div>
+
+      <button class="modal-ok" id="helpOk">Понятно!</button>
+    </div>
+  </div>
+
+  <!-- ══ ИГРОВОЙ ЭКРАН ══ -->
+  <div id="gameScreen" class="screen">
+    <div class="game-hud">
+      <div class="hud-left">
+        <div class="hud-hero">
+          <div class="hud-portrait" id="hudPortrait"><div class="hud-lv-badge" id="hudLevel">Lv.1</div></div>
+          <div class="hud-bars">
+            <div class="hud-name" id="hudName">—</div>
+            <div class="bar-row"><span>HP</span>
+              <div class="bar-wrap"><div id="hpBar" class="bar hp-bar" style="width:100%"></div></div>
+              <span id="hpVal">—</span>
+            </div>
+            <div class="bar-row" id="mpRow"><span id="resourceLabel">MP</span>
+              <div class="bar-wrap"><div id="mpBar" class="bar mp-bar" style="width:100%"></div></div>
+              <span id="mpVal">—</span>
+            </div>
+            <div class="bar-row" id="xpRow"><span>XP</span>
+              <div class="bar-wrap"><div id="xpBar" class="bar xp-bar" style="width:0%"></div></div>
+              <span id="xpVal">0/100</span>
+            </div>
+          </div>
+        </div>
+        <div class="abilities">
+          <div class="ability" id="ab1"><kbd>Q</kbd><span id="ab1Name">—</span><div class="cd-overlay" id="ab1Cd"></div></div>
+          <div class="ability" id="ab2"><kbd>E</kbd><span id="ab2Name">—</span><div class="cd-overlay" id="ab2Cd"></div></div>
+        </div>
+      </div>
+      <div class="hud-center" id="waveInfo">
+        <div class="badge">Волна <span id="waveNum">1</span></div>
+        <div class="badge">Монстров: <span id="mobCount">0</span></div>
+      </div>
+      <div class="hud-right">
+        <button id="camModeBtn" class="btn-hud">Камера: Сзади</button>
+        <div class="cam-zoom-box">
+          <button id="camZoomOut" class="btn-hud cam-zoom-btn">-</button>
+          <span id="camZoomVal" class="cam-zoom-val">100%</span>
+          <button id="camZoomIn" class="btn-hud cam-zoom-btn">+</button>
+        </div>
+        <button id="menuBtn" class="btn-hud">Меню</button>
+      </div>
+    </div>
+
+    <canvas id="arena" width="1100" height="620"></canvas>
+
+    <div class="controls-hint">
+      <span><kbd>WASD</kbd> / <kbd>↑↓←→</kbd> движение</span>
+      <span><kbd>ЛКМ</kbd> / <kbd>Пробел</kbd> атака</span>
+      <span><kbd>Shift</kbd> перекат</span>
+      <span><kbd>Q</kbd> способность 1</span>
+      <span><kbd>E</kbd> способность 2</span>
+      <span><kbd>R</kbd>/<kbd>F</kbd> доп.навыки</span>
+      <span><kbd>G</kbd> умение оружия</span>
+      <span><kbd>1-4</kbd> зелья</span>
+      <span><kbd>Tab</kbd> инвентарь</span>
+      <span><kbd>C</kbd> смена камеры</span>
+      <span><kbd>[</kbd>/<kbd>]</kbd> зум</span>
+      <span class="hint-sep">Подойди к врагу — бой начнётся!</span>
+    </div>
+    <div class="controls-variants">
+      <div class="cv-title">Варианты управления</div>
+      <div class="cv-grid">
+        <div class="cv-col">
+          <div class="cv-label">🎮 Классика</div>
+          <div><kbd>WASD</kbd> движение</div>
+          <div><kbd>Пробел</kbd> / <kbd>ЛКМ</kbd> атака</div>
+          <div><kbd>Q</kbd> / <kbd>E</kbd> способности</div>
+          <div><kbd>Shift</kbd> перекат</div>
+        </div>
+        <div class="cv-col">
+          <div class="cv-label">🎯 Стрелки</div>
+          <div><kbd>↑↓←→</kbd> движение</div>
+          <div><kbd>ЛКМ</kbd> атака</div>
+          <div><kbd>Q</kbd> / <kbd>E</kbd> способности</div>
+          <div><kbd>Shift</kbd> перекат</div>
+        </div>
+        <div class="cv-col">
+          <div class="cv-label">👥 P2 (кооп)</div>
+          <div><kbd>IJKL</kbd> движение</div>
+          <div><kbd>L</kbd> атака</div>
+          <div><kbd>U</kbd> / <kbd>O</kbd> способности</div>
+          <div><kbd>P</kbd> перекат</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="log" class="log"></div>
+  </div>
+
+  <!-- ══ SKILL TREE MODAL ══ -->
+  <div id="skillModal">
+    <div class="skill-tree-box">
+      <div class="skill-tree-header">
+        <span class="skill-tree-title">Древо навыков</span>
+        <span class="skill-hero-lv" id="skillHeroLv">Ур. 1</span>
+        <span class="skill-sp-badge" id="skillSPBadge">⭐ 0</span>
+        <button class="skill-close" id="skillCloseBtn">×</button>
+      </div>
+      <div class="skill-xp-bar"><div class="skill-xp-fill" id="skillXpFill" style="width:0%"></div></div>
+      <div class="skill-tree-content" id="skillTreeContent"></div>
+    </div>
+  </div>
+
+  <!-- ══ MOBILE CONTROLS ══ -->
+  <div id="mobileControls">
+    <div id="joyArea"><div id="joyKnob"></div></div>
+    <div id="mobileButtons">
+      <button class="mb-btn" id="mb-atk">⚔</button>
+      <button class="mb-btn" id="mb-q">Q</button>
+      <button class="mb-btn" id="mb-e">E</button>
+      <button class="mb-btn" id="mb-dodge">↻</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Профиль героя — Победа или смерть</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ width:100%; min-height:100%; background:#080608; color:#e8d9c0; font-family:'Manrope',sans-serif; overflow-x:hidden; }
+
+  /* ─── Фон ─── */
+  body::before{
+    content:'';
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 0%, rgba(80,30,0,.55) 0%, transparent 70%),
+      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(20,10,40,.6) 0%, transparent 70%);
+    z-index:0; pointer-events:none;
+  }
+
+  /* ─── Шапка ─── */
+  header{
+    position:relative; z-index:10;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 28px;
+    border-bottom:1px solid rgba(200,120,30,.2);
+    background:rgba(0,0,0,.55);
+    backdrop-filter:blur(8px);
+  }
+  .back-btn{
+    background:none; border:1px solid rgba(200,140,40,.4); border-radius:5px;
+    color:#c8922a; font-family:'Cinzel',serif; font-size:.85rem;
+    padding:8px 18px; cursor:pointer; letter-spacing:.1em;
+    transition:.15s; text-decoration:none; display:inline-block;
+  }
+  .back-btn:hover{ border-color:#c8922a; background:rgba(200,140,40,.08); }
+  .header-title{
+    font-family:'Cinzel',serif; font-weight:700; font-size:1.1rem;
+    color:#c8922a; letter-spacing:.15em; text-transform:uppercase;
+    position:absolute; left:50%; transform:translateX(-50%);
+  }
+
+  /* ─── Главный контейнер ─── */
+  .page{ position:relative; z-index:1; max-width:1000px; margin:0 auto; padding:28px 20px 60px; }
+
+  /* ─── Карточка персонажа ─── */
+  .hero-card{
+    display:flex; gap:24px; align-items:flex-start;
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(200,140,40,.25);
+    border-radius:12px; padding:24px;
+    margin-bottom:28px;
+  }
+  @media(max-width:600px){
+    .hero-card{ flex-direction:column; align-items:center; }
+  }
+  .hero-avatar{
+    width:120px; height:120px; flex-shrink:0;
+    background:rgba(200,120,20,.12);
+    border:2px solid rgba(200,140,40,.35);
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:3.8rem;
+    box-shadow:0 0 30px rgba(200,120,20,.2);
+  }
+  .hero-avatar.has-art{
+    background-size:cover;
+    background-position:center;
+    color:transparent;
+    overflow:hidden;
+  }
+  .hero-info{ flex:1; }
+  .hero-name{
+    font-family:'Cinzel',serif; font-weight:700;
+    font-size:1.8rem; color:#f5d070;
+    text-shadow:0 0 18px rgba(245,180,60,.5);
+    margin-bottom:4px;
+  }
+  .hero-role{ color:#9b7030; font-size:.9rem; letter-spacing:.12em; text-transform:uppercase; margin-bottom:16px; }
+
+  /* XP бар */
+  .xp-row{ display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+  .xp-label{ font-size:.8rem; color:#9b7030; min-width:55px; }
+  .xp-bar{ flex:1; height:8px; background:rgba(255,255,255,.1); border-radius:4px; overflow:hidden; }
+  .xp-fill{ height:100%; background:linear-gradient(90deg,#c8922a,#ffd700); border-radius:4px; transition:width .5s; }
+  .level-badge{
+    background:linear-gradient(135deg,#3d1a00,#7a3500);
+    border:1px solid #c8922a; border-radius:20px;
+    color:#f5d070; font-family:'Cinzel',serif; font-weight:700;
+    font-size:.85rem; padding:4px 12px; white-space:nowrap;
+  }
+  .sp-badge{
+    background:rgba(100,200,120,.15);
+    border:1px solid rgba(100,200,120,.4);
+    color:#80e890; font-size:.78rem;
+    border-radius:4px; padding:3px 9px; cursor:default;
+  }
+
+  /* Статы */
+  .stats-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:4px; }
+  @media(max-width:400px){ .stats-grid{ grid-template-columns:repeat(2,1fr); } }
+  .stat-item{
+    background:rgba(255,255,255,.04); border:1px solid rgba(200,140,40,.15);
+    border-radius:8px; padding:10px 12px; text-align:center;
+  }
+  .stat-item .si-val{ font-family:'Cinzel',serif; font-size:1.15rem; color:#f5d070; }
+  .stat-item .si-lbl{ font-size:.7rem; color:#6e5028; text-transform:uppercase; letter-spacing:.1em; margin-top:2px; }
+
+  /* ─── Секции ─── */
+  .section-title{
+    font-family:'Cinzel',serif; font-weight:700; font-size:1rem;
+    color:#c8922a; letter-spacing:.12em; text-transform:uppercase;
+    border-bottom:1px solid rgba(200,140,40,.2); padding-bottom:8px; margin-bottom:16px;
+  }
+  .section{ margin-bottom:28px; }
+
+  /* ─── Оружие ─── */
+  .weapon-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:12px; }
+  .weapon-card{
+    background:rgba(255,255,255,.04); border:1px solid rgba(200,140,40,.2);
+    border-radius:8px; padding:14px 10px; text-align:center;
+    cursor:pointer; transition:.18s; position:relative;
+  }
+  .weapon-card:hover{ border-color:#c8922a; background:rgba(200,140,40,.08); }
+  .weapon-card.equipped{
+    border-color:#f5d070; background:rgba(245,200,60,.07);
+    box-shadow:0 0 16px rgba(245,200,60,.2);
+  }
+  .weapon-card.equipped::after{
+    content:'Экипировано'; position:absolute; bottom:6px; left:0; right:0;
+    font-size:.62rem; color:#f5d070; letter-spacing:.08em;
+  }
+  .weapon-icon{ font-size:2rem; margin-bottom:6px; }
+  .weapon-name{ font-size:.78rem; color:#e8d9c0; font-weight:600; }
+  .weapon-stat{ font-size:.7rem; color:#9b7030; margin-top:3px; }
+  .weapon-cost{ font-size:.7rem; color:#f5d070; margin-top:4px; }
+  .weapon-locked{ opacity:.4; cursor:not-allowed; }
+
+  /* ─── Дерево навыков ─── */
+  .skill-tier{ margin-bottom:12px; }
+  .tier-label{ font-size:.72rem; color:#6e5028; text-transform:uppercase; letter-spacing:.15em; margin-bottom:8px; }
+  .skill-row{ display:flex; flex-wrap:wrap; gap:10px; }
+  .skill-node{
+    background:rgba(255,255,255,.04); border:1px solid rgba(200,140,40,.2);
+    border-radius:8px; padding:10px 14px; min-width:120px; max-width:180px;
+    cursor:pointer; transition:.18s; position:relative; text-align:center;
+  }
+  .skill-node:hover:not(.locked):not(.unlocked){ border-color:#c8922a; background:rgba(200,140,40,.1); }
+  .skill-node.unlocked{ border-color:#80e890; background:rgba(100,200,120,.06); }
+  .skill-node.locked{ opacity:.38; cursor:not-allowed; }
+  .skill-node .sn-icon{ font-size:1.4rem; }
+  .skill-node .sn-name{ font-size:.74rem; font-weight:700; color:#e8d9c0; margin:4px 0 2px; }
+  .skill-node .sn-desc{ font-size:.65rem; color:#7a5828; line-height:1.3; }
+  .skill-node .sn-cost{
+    display:inline-block; background:rgba(100,200,120,.15); border:1px solid rgba(100,200,120,.3);
+    color:#80e890; font-size:.62rem; border-radius:3px; padding:1px 6px; margin-top:4px;
+  }
+  .skill-node.unlocked .sn-cost{ background:rgba(100,200,120,.25); color:#afffbb; }
+
+  /* Мага — выбор элемента */
+  .element-picker{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
+  .el-btn{
+    background:rgba(255,255,255,.05); border:1px solid rgba(200,140,40,.25);
+    border-radius:6px; padding:8px 16px; cursor:pointer;
+    font-size:.82rem; color:#e8d9c0; transition:.15s;
+  }
+  .el-btn:hover{ border-color:#c8922a; }
+  .el-btn.active{ border-color:var(--ec); background:rgba(255,255,255,.08); color:var(--ec); box-shadow:0 0 14px color-mix(in srgb,var(--ec) 40%,transparent); }
+
+  /* ─── Кнопка похода ─── */
+  .dungeon-btn{
+    display:block; width:100%; padding:18px;
+    background:linear-gradient(135deg,#1a0a2e 0%,#3d1060 50%,#1a0a2e 100%);
+    border:2px solid #8844cc; border-radius:10px;
+    color:#d4a8ff; font-family:'Cinzel',serif; font-weight:700;
+    font-size:1.1rem; letter-spacing:.1em; text-transform:uppercase;
+    cursor:pointer; transition:.18s;
+    box-shadow:0 0 28px rgba(136,60,220,.3);
+    text-align:center; text-decoration:none;
+  }
+  .dungeon-btn:hover{ box-shadow:0 0 44px rgba(180,80,255,.5); transform:scale(1.02); border-color:#b36eff; }
+  .dungeon-btn:active{ transform:scale(.98); }
+
+  /* Toast */
+  #toast{
+    position:fixed; bottom:32px; left:50%; transform:translateX(-50%) translateY(40px);
+    background:rgba(20,10,40,.9); border:1px solid #8844cc; border-radius:8px;
+    padding:10px 24px; color:#d4a8ff; font-size:.85rem; letter-spacing:.06em;
+    transition:.3s; opacity:0; pointer-events:none; z-index:999; white-space:nowrap;
+  }
+  #toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-btn" href="index.html">← Назад</a>
+  <span class="header-title">Профиль героя</span>
+</header>
+
+<div class="page" id="heroPage">
+  <!-- Заполняется JavaScript -->
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────────
+// Данные персонажей
+// ─────────────────────────────────────────────────
+const HERO_DATA = {
+  knight: {
+    key:'knight', name:'Рагнар', role:'Мечник', portrait:'⚔️',
+    color:'#73a5ff',
+    hp:500, spd:2.8, atk:[150,150], atkRange:1.25, atkCd:700,
+    ab1Name:'Вихрь', ab2Name:'Рывок',
+    lore:'Ветеран бесчисленных битв. Его клинок несёт страдание, его щит — спасение. Не знает страха.',
+  },
+  assassin: {
+    key:'assassin', name:'Тень', role:'Убийца', portrait:'🗡️',
+    color:'#cc44aa',
+    hp:320, spd:3.8, atk:[120,180], atkRange:1.1, atkCd:500,
+    ab1Name:'Яд', ab2Name:'Тень',
+    lore:'Призрак в ночи. Прежде чем враг осознаёт угрозу — он уже мёртв. Смерть — её ремесло.',
+  },
+  mage: {
+    key:'mage', name:'Аркана', role:'Маг', portrait:'🔮',
+    color:'#ff6633',
+    hp:280, spd:3.0, atk:[100,160], atkRange:3.5, atkCd:900,
+    ab1Name:'Огненный шар', ab2Name:'Метеор',
+    lore:'Мастер стихий. Каждое её слово — заклинание, каждый жест — катастрофа для врагов.',
+  },
+};
+
+const MAGE_ELEMENTS = {
+  fire:  { color:'#ff6633', name:'Огонь',  icon:'🔥', ab1:'Огненный шар',   ab2:'Метеор' },
+  water: { color:'#44aaff', name:'Вода',   icon:'💧', ab1:'Ледяной болт',   ab2:'Приливная волна' },
+  earth: { color:'#88bb44', name:'Земля',  icon:'🌍', ab1:'Каменный бросок',ab2:'Землетрясение' },
+  air:   { color:'#c8e8ff', name:'Воздух', icon:'💨', ab1:'Ветряной порез', ab2:'Торнадо' },
+};
+
+// Оружие
+const WEAPONS = {
+  knight: [
+    { id:'sw_iron',   name:'Железный меч',  icon:'⚔️',  bonus:'+15 атк', atk:15, cost:0,    desc:'Стартовое оружие' },
+    { id:'sw_steel',  name:'Стальной клинок',icon:'🗡️', bonus:'+35 атк', atk:35, cost:150,   desc:'Прочный и острый' },
+    { id:'sw_shadow', name:'Теневой клинок', icon:'🌑',  bonus:'+60 атк', atk:60, cost:350,   desc:'+10% шанс крита' },
+    { id:'sw_legend', name:'Меч Легенды',    icon:'✨',  bonus:'+100 атк',atk:100,cost:800,   desc:'Оружие паладинов' },
+    { id:'ax_war',    name:'Боевой топор',   icon:'🪓',  bonus:'+50 атк', atk:50, cost:200,   desc:'Медленный, но мощный' },
+    { id:'sp_pike',   name:'Пика',           icon:'🏹',  bonus:'+40 атк', atk:40, cost:180,   desc:'+0.3 дальность' },
+  ],
+  assassin: [
+    { id:'dg_basic',  name:'Кинжал',         icon:'🗡️', bonus:'+10 атк', atk:10, cost:0,    desc:'Стартовое оружие' },
+    { id:'dg_poison', name:'Ядовитый кинжал', icon:'💚',  bonus:'+28 атк', atk:28, cost:130,   desc:'+яд при ударе' },
+    { id:'dg_twin',   name:'Парные клинки',   icon:'⚔️',  bonus:'+45 атк', atk:45, cost:280,   desc:'+скорость атаки' },
+    { id:'dg_void',   name:'Клинок пустоты',  icon:'🖤',  bonus:'+80 атк', atk:80, cost:600,   desc:'Игнорирует броню' },
+    { id:'bow_short', name:'Короткий лук',    icon:'🏹',  bonus:'+35 атк', atk:35, cost:160,   desc:'Дальние атаки' },
+    { id:'sc_fan',    name:'Веер сюрикенов',  icon:'⭐',  bonus:'+30 атк', atk:30, cost:200,   desc:'Атакует 3 цели' },
+  ],
+  mage: [
+    { id:'st_wood',   name:'Деревянный жезл', icon:'🪄',  bonus:'+10 маг', atk:10, cost:0,    desc:'Стартовое оружие' },
+    { id:'st_fire',   name:'Огненный посох',  icon:'🔥',  bonus:'+35 маг', atk:35, cost:140,   desc:'+ожог при ударе' },
+    { id:'st_ice',    name:'Ледяной посох',   icon:'❄️',  bonus:'+30 маг', atk:30, cost:140,   desc:'+заморозка' },
+    { id:'st_storm',  name:'Посох бури',      icon:'⚡',  bonus:'+55 маг', atk:55, cost:340,   desc:'+молния при крите' },
+    { id:'st_arch',   name:'Архонский посох', icon:'💜',  bonus:'+90 маг', atk:90, cost:700,   desc:'Двойные заклинания' },
+    { id:'tome_anc',  name:'Фолиант предков', icon:'📖',  bonus:'+40 маг', atk:40, cost:220,   desc:'-кд способностей' },
+  ],
+};
+
+// Деревья навыков
+const SKILL_TREES = {
+  knight: { name:'Рагнар — Древо навыков', skills:[
+    {id:'hp_boost',   tier:1, name:'Закалённость',   desc:'+80 макс. HP',            icon:'🛡️', req:[],           cost:1},
+    {id:'whirl_dmg',  tier:1, name:'Вихрь силы',     desc:'+25% урона Вихря',         icon:'🌪️', req:[],           cost:1},
+    {id:'rush_stun',  tier:2, name:'Оглушающий рывок',desc:'Рывок оглушает цель',     icon:'💥', req:['whirl_dmg'],cost:2},
+    {id:'iron_skin',  tier:2, name:'Железная кожа',  desc:'-15% вх. урона',           icon:'⚙️', req:['hp_boost'], cost:2},
+    {id:'berserker',  tier:3, name:'Берсерк',        desc:'+40% атк при HP<40%',      icon:'🔴', req:['rush_stun'],cost:3},
+    {id:'shield_bash',tier:3, name:'Удар щитом',     desc:'Q оглушает всех врагов',   icon:'🛡️', req:['iron_skin'],cost:3},
+    {id:'avatar_war', tier:4, name:'Аватар войны',   desc:'+30% урона, -10% кд',      icon:'⚔️', req:['berserker','shield_bash'],cost:5},
+  ]},
+  assassin: { name:'Тень — Древо навыков', skills:[
+    {id:'spd_boost',  tier:1, name:'Гибкость',       desc:'+0.5 скорости',            icon:'💨', req:[],           cost:1},
+    {id:'poison_plus',tier:1, name:'Сильный яд',     desc:'+50% урона яда',           icon:'☠️', req:[],           cost:1},
+    {id:'backstab',   tier:2, name:'Удар в спину',   desc:'+80% урон первого удара',  icon:'🗡️', req:['spd_boost'],cost:2},
+    {id:'shadow_step',tier:2, name:'Шаг тени',       desc:'E телепортирует за цель',  icon:'🌑', req:['spd_boost'],cost:2},
+    {id:'lethal_poison',tier:3,name:'Смертельный яд',desc:'Яд снимает 8% HP/сек',     icon:'💚', req:['poison_plus'],cost:3},
+    {id:'death_mark', tier:3, name:'Метка смерти',   desc:'x2 урона при HP<30%',      icon:'💀', req:['backstab'],  cost:3},
+    {id:'shadowdancer',tier:4,name:'Танцор теней',   desc:'+60% крит, невидимость',   icon:'🌑', req:['death_mark','shadow_step'],cost:5},
+  ]},
+  mage_fire: { name:'Аркана — Огонь', skills:[
+    {id:'fire_bow',   tier:1, name:'Огненный лук',   desc:'Прожигающий снаряд',       icon:'🏹', req:[],           cost:1},
+    {id:'burn_chance',tier:1, name:'Поджог',         desc:'+35% шанс поджога',        icon:'🔥', req:[],           cost:1},
+    {id:'fire_aura',  tier:2, name:'Огненная аура',  desc:'Враги рядом горят',        icon:'☀️', req:['fire_bow'], cost:2},
+    {id:'fire_fist',  tier:2, name:'Огненный кулак', desc:'Q взрыв вокруг игрока',    icon:'👊', req:['burn_chance'],cost:2},
+    {id:'fire_shield',tier:3, name:'Огненный щит',   desc:'Отражает 35% урона',       icon:'🔰', req:['fire_aura'],cost:3},
+    {id:'meteor_plus',tier:3, name:'Мега-метеор',    desc:'+50% урона метеора',       icon:'☄️', req:['fire_fist'],cost:3},
+    {id:'inferno',    tier:4, name:'Инферно',        desc:'Поджигает всё поле боя',   icon:'🌋', req:['fire_shield','meteor_plus'],cost:5},
+  ]},
+  mage_water: { name:'Аркана — Вода', skills:[
+    {id:'ice_bolt',   tier:1, name:'Ледяной болт',   desc:'-20% скорости цели',       icon:'🧊', req:[],           cost:1},
+    {id:'heal_wave',  tier:1, name:'Волна лечения',  desc:'Q восстанавливает 80 HP',   icon:'💙', req:[],           cost:1},
+    {id:'water_shield',tier:2,name:'Водный щит',     desc:'-12% вх. урона',           icon:'🛡️', req:['ice_bolt'], cost:2},
+    {id:'frost_nova', tier:2, name:'Ледяная нова',   desc:'Замораживает врагов рядом',icon:'❄️', req:['heal_wave'],cost:2},
+    {id:'tidal_wave', tier:3, name:'Прилив',         desc:'E отбрасывает всех',       icon:'🌊', req:['water_shield'],cost:3},
+    {id:'ice_armor',  tier:3, name:'Ледяная броня',  desc:'Атакующий получает заморозку',icon:'🧊',req:['frost_nova'],cost:3},
+    {id:'absolute_zero',tier:4,name:'Абсолютный ноль',desc:'Замораживает поле на 4с', icon:'🌨️', req:['tidal_wave','ice_armor'],cost:5},
+  ]},
+  mage_earth: { name:'Аркана — Земля', skills:[
+    {id:'stone_throw',tier:1, name:'Каменный бросок',desc:'+20 урона заклинания',     icon:'🪨', req:[],           cost:1},
+    {id:'earth_armor',tier:1, name:'Земляной щит',   desc:'-10% вх. урона',           icon:'🛡️', req:[],           cost:1},
+    {id:'thorns',     tier:2, name:'Шипы',           desc:'Отражает 20% урона',       icon:'🌵', req:['earth_armor'],cost:2},
+    {id:'tremor',     tier:2, name:'Толчок земли',   desc:'Замедляет и оглушает',     icon:'🌋', req:['stone_throw'],cost:2},
+    {id:'boulder',    tier:3, name:'Валун',          desc:'Огромный камень-снаряд',   icon:'🪨', req:['tremor'],    cost:3},
+    {id:'stone_skin', tier:3, name:'Каменная кожа',  desc:'-25% вх. урона',           icon:'🗿', req:['thorns'],    cost:3},
+    {id:'earthquake', tier:4, name:'Землетрясение',  desc:'AOE оглушение всех',       icon:'💥', req:['boulder','stone_skin'],cost:5},
+  ]},
+  mage_air: { name:'Аркана — Воздух', skills:[
+    {id:'wind_slash', tier:1, name:'Ветряной порез', desc:'+15% скорость снарядов',   icon:'💨', req:[],           cost:1},
+    {id:'haste',      tier:1, name:'Ускорение',      desc:'+0.4 скорости',            icon:'⚡', req:[],           cost:1},
+    {id:'lightning',  tier:2, name:'Молния',         desc:'Атаки иногда оглушают',    icon:'⚡', req:['wind_slash'],cost:2},
+    {id:'tornado',    tier:2, name:'Торнадо',        desc:'Затягивает врагов к центру',icon:'🌀',req:['haste'],     cost:2},
+    {id:'storm_aura', tier:3, name:'Аура шторма',    desc:'Молнии бьют рядом стоящих',icon:'🌩️',req:['lightning'],cost:3},
+    {id:'chain_lightning',tier:3,name:'Цепная молния',desc:'Молния прыгает на 3 цели',icon:'⚡',req:['tornado'],   cost:3},
+    {id:'cyclone',    tier:4, name:'Циклон',         desc:'Гигантский торнадо на поле',icon:'🌪️',req:['storm_aura','chain_lightning'],cost:5},
+  ]},
+};
+
+const HERO_SAVE_KEY = 'kia_hero_progress';
+const HERO_ART = {
+  knight:{ src:'image/Gemini_Generated_Image_l80991l80991l809.png', label:'RAGNAR', icon:'⚔', bg1:'#111725', bg2:'#293f73', frame:'#9ab8ff', glow:'#87a6ff' },
+  assassin:{ label:'LIORA', icon:'🗡', bg1:'#1b140a', bg2:'#6d4517', frame:'#ffd37f', glow:'#f5c36a' },
+  mage:{ label:'SELENA', icon:'✦', bg1:'#170a23', bg2:'#5c2d8e', frame:'#f0b7ff', glow:'#d495ff' },
+};
+function escSvg(text){
+  return String(text||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/\"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+function heroArtUrl(key){
+  const meta=HERO_ART[key]||HERO_ART.knight;
+  if(meta.src) return meta.src;
+  if(!meta.dataUrl){
+    const svg="<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 320'>"
+      +"<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='"+meta.bg1+"'/><stop offset='100%' stop-color='"+meta.bg2+"'/></linearGradient><radialGradient id='r' cx='50%' cy='42%' r='52%'><stop offset='0%' stop-color='"+meta.glow+"' stop-opacity='.75'/><stop offset='100%' stop-color='"+meta.glow+"' stop-opacity='0'/></radialGradient></defs>"
+      +"<rect width='320' height='320' rx='36' fill='url(#g)'/><rect x='12' y='12' width='296' height='296' rx='28' fill='none' stroke='"+meta.frame+"' stroke-width='4'/><circle cx='162' cy='148' r='112' fill='url(#r)'/>"
+      +"<path d='M66 260 C102 182 124 116 160 98 C196 116 222 182 254 260' fill='"+meta.bg1+"' fill-opacity='.58'/><text x='34' y='54' font-family='Cinzel, serif' font-size='28' font-weight='700' fill='"+meta.frame+"'>"+escSvg(meta.label)+"</text><text x='160' y='210' text-anchor='middle' font-size='120' font-family='Segoe UI Emoji, Apple Color Emoji, sans-serif'>"+escSvg(meta.icon)+"</text></svg>";
+    meta.dataUrl='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
+  }
+  return meta.dataUrl;
+}
+
+// ─────────────────────────────────────────────────
+// Загрузка / сохранение
+// ─────────────────────────────────────────────────
+function loadProgress(){
+  try{
+    const d = JSON.parse(localStorage.getItem(HERO_SAVE_KEY)||'{}');
+    return {
+      knight:   Object.assign({level:1,xp:0,sp:0,unlocked:[],weapon:'sw_iron',  coins:0},d.knight||{}),
+      assassin: Object.assign({level:1,xp:0,sp:0,unlocked:[],weapon:'dg_basic', coins:0},d.assassin||{}),
+      mage:     Object.assign({level:1,xp:0,sp:0,unlocked:[],weapon:'st_wood',  coins:0,element:'fire'},d.mage||{}),
+    };
+  }catch(e){
+    return {
+      knight:  {level:1,xp:0,sp:0,unlocked:[],weapon:'sw_iron',  coins:0},
+      assassin:{level:1,xp:0,sp:0,unlocked:[],weapon:'dg_basic', coins:0},
+      mage:    {level:1,xp:0,sp:0,unlocked:[],weapon:'st_wood',  coins:0,element:'fire'},
+    };
+  }
+}
+
+function saveProgress(data){
+  localStorage.setItem(HERO_SAVE_KEY, JSON.stringify(data));
+}
+
+function xpForLevel(lv){ return 100+(lv-1)*80; }
+
+// ─────────────────────────────────────────────────
+// Параметры из URL: ?hero=knight
+// ─────────────────────────────────────────────────
+const params = new URLSearchParams(location.search);
+let heroKey   = params.get('hero') || 'knight';
+if(!HERO_DATA[heroKey]) heroKey = 'knight';
+
+let progress  = loadProgress();
+let heroData  = HERO_DATA[heroKey];
+let heroP     = progress[heroKey];
+
+// ─────────────────────────────────────────────────
+// Рендер страницы
+// ─────────────────────────────────────────────────
+function getSkillTreeKey(){
+  if(heroKey==='mage') return 'mage_'+(heroP.element||'fire');
+  return heroKey;
+}
+
+function render(){
+  heroP = progress[heroKey];
+  const xpMax = xpForLevel(heroP.level);
+  const xpPct = Math.min(100, Math.round(heroP.xp/xpMax*100));
+  const tree   = SKILL_TREES[getSkillTreeKey()];
+  const weapons = WEAPONS[heroKey];
+
+  // Вычислить бонус оружия
+  const equippedW = weapons.find(w=>w.id===heroP.weapon) || weapons[0];
+  const totalAtk = heroData.atk[0] + (equippedW?equippedW.atk:0);
+
+  // Элементы для мага
+  let elPickerHTML = '';
+  if(heroKey==='mage'){
+    elPickerHTML = `<div class="section">
+      <div class="section-title">Стихия магии</div>
+      <div class="element-picker">
+        ${Object.entries(MAGE_ELEMENTS).map(([k,el])=>`
+          <button class="el-btn${heroP.element===k?' active':''}"
+            style="--ec:${el.color}"
+            onclick="setElement('${k}')">${el.icon} ${el.name}</button>
+        `).join('')}
+      </div>
+    </div>`;
+  }
+
+  // Тиры навыков
+  const tiers = [1,2,3,4];
+  const skillsHTML = tiers.map(tier=>{
+    const nodes = tree.skills.filter(s=>s.tier===tier);
+    if(!nodes.length) return '';
+    const nodesHTML = nodes.map(sk=>{
+      const unlocked = heroP.unlocked.includes(sk.id);
+      const reqMet   = sk.req.every(r=>heroP.unlocked.includes(r));
+      const canBuy   = !unlocked && reqMet && heroP.sp>=sk.cost;
+      const cls      = unlocked?'unlocked':(reqMet?'available':'locked');
+      return `<div class="skill-node ${cls}" onclick="_onSkill('${sk.id}')">
+        <div class="sn-icon">${sk.icon}</div>
+        <div class="sn-name">${sk.name}</div>
+        <div class="sn-desc">${sk.desc}</div>
+        ${unlocked?`<span class="sn-cost">✓ Изучено</span>`:`<span class="sn-cost">⬡ ${sk.cost} ОН</span>`}
+      </div>`;
+    }).join('');
+    return `<div class="skill-tier">
+      <div class="tier-label">Уровень ${tier}</div>
+      <div class="skill-row">${nodesHTML}</div>
+    </div>`;
+  }).join('');
+
+  // Оружие
+  const weaponsHTML = weapons.map(w=>{
+    const equipped = (heroP.weapon===w.id);
+    const owned    = (w.cost===0||(heroP.purchasedWeapons||[]).includes(w.id));
+    const locked   = !owned;
+    return `<div class="weapon-card${equipped?' equipped':''}${locked?' weapon-locked':''}"
+        onclick="_onWeapon('${w.id}',${w.cost},${owned})">
+        <div class="weapon-icon">${w.icon}</div>
+        <div class="weapon-name">${w.name}</div>
+        <div class="weapon-stat">${w.bonus}</div>
+        <div class="weapon-cost">${owned?(equipped?'⚔ Экипировано':'Надеть'):`🪙 ${w.cost}`}</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('heroPage').innerHTML = `
+    <!-- ── Карточка персонажа ── -->
+    <div class="hero-card">
+      <div class="hero-avatar has-art" style="background-image:url('${heroArtUrl(heroKey)}')"></div>
+      <div class="hero-info">
+        <div class="hero-name">${heroData.name}</div>
+        <div class="hero-role">${heroData.role}</div>
+
+        <div class="xp-row">
+          <span class="xp-label">Уровень</span>
+          <span class="level-badge">Lv. ${heroP.level}</span>
+          <div class="xp-bar"><div class="xp-fill" style="width:${xpPct}%"></div></div>
+          <span style="font-size:.72rem;color:#6e5028;white-space:nowrap">${heroP.xp}/${xpMax}</span>
+          <span class="sp-badge">⬡ ${heroP.sp} ОН</span>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-item"><div class="si-val">${heroData.hp + (heroP.level-1)*20}</div><div class="si-lbl">❤ HP</div></div>
+          <div class="stat-item"><div class="si-val">${totalAtk}</div><div class="si-lbl">⚔ ATK</div></div>
+          <div class="stat-item"><div class="si-val">${heroData.spd.toFixed(1)}</div><div class="si-lbl">💨 SPD</div></div>
+          <div class="stat-item"><div class="si-val">${heroData.atkCd}мс</div><div class="si-lbl">⏱ КД ATK</div></div>
+          <div class="stat-item"><div class="si-val">${heroData.ab1Name}</div><div class="si-lbl">⚡ Умение 1</div></div>
+          <div class="stat-item"><div class="si-val">${heroData.ab2Name}</div><div class="si-lbl">💫 Умение 2</div></div>
+        </div>
+        <p style="font-size:.75rem;color:#5a4020;margin-top:12px;line-height:1.5;font-style:italic">"${heroData.lore}"</p>
+      </div>
+    </div>
+
+    <!-- ── Элемент мага ── -->
+    ${elPickerHTML}
+
+    <div class="section">
+      <div class="section-title">Тренировочный зал</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="el-btn" onclick="trainHero(1)">Тренировка I · 50 🪙 · +40 XP</button>
+        <button class="el-btn" onclick="trainHero(2)">Тренировка II · 120 🪙 · +110 XP</button>
+        <button class="el-btn" onclick="trainHero(3)">Тренировка III · 260 🪙 · +260 XP</button>
+      </div>
+      <p style="margin-top:8px;color:#8a6633;font-size:.75rem">Прокачка героя выполняется здесь, в профиле, а не во время боя.</p>
+    </div>
+
+    <!-- ── Оружие ── -->
+    <div class="section">
+      <div class="section-title">Оружие <span style="font-size:.75rem;color:#6e5028">· 🪙 ${heroP.coins} монет</span></div>
+      <div class="weapon-grid">${weaponsHTML}</div>
+    </div>
+
+    <!-- ── Дерево навыков ── -->
+    <div class="section">
+      <div class="section-title">${tree.name} <span style="font-size:.75rem;color:#6e5028">· ⬡ ${heroP.sp} очков навыков</span></div>
+      ${skillsHTML}
+    </div>
+
+    <!-- ── Кнопка похода ── -->
+    <button class="dungeon-btn" onclick="startDungeon()">
+      ⚔&nbsp;&nbsp;Начать поход в подземелья&nbsp;&nbsp;▼
+    </button>
+  `;
+}
+
+// ─────────────────────────────────────────────────
+// Действия
+// ─────────────────────────────────────────────────
+window._onSkill = function(skillId){
+  const tree = SKILL_TREES[getSkillTreeKey()];
+  const sk   = tree.skills.find(s=>s.id===skillId);
+  if(!sk) return;
+
+  if(heroP.unlocked.includes(sk.id)){ toast('Уже изучено!'); return; }
+
+  const reqMet = sk.req.every(r=>heroP.unlocked.includes(r));
+  if(!reqMet){ toast('Сначала изучи необходимые навыки'); return; }
+
+  if(heroP.sp < sk.cost){ toast(`Нужно ${sk.cost} ОН навыков — сейчас ${heroP.sp}`); return; }
+
+  heroP.sp -= sk.cost;
+  heroP.unlocked.push(sk.id);
+  saveProgress(progress);
+  toast(`Изучено: ${sk.name}!`);
+  render();
+};
+
+window._onWeapon = function(weaponId, cost, owned){
+  if(heroP.weapon===weaponId){ toast('Уже экипировано'); return; }
+
+  if(!owned){
+    if(heroP.coins < cost){ toast(`Нужно 🪙 ${cost} монет — есть ${heroP.coins}`); return; }
+    heroP.coins -= cost;
+    if(!heroP.purchasedWeapons) heroP.purchasedWeapons=[];
+    heroP.purchasedWeapons.push(weaponId);
+    toast('Оружие куплено!');
+  }
+
+  heroP.weapon = weaponId;
+  saveProgress(progress);
+  toast('Оружие экипировано ⚔');
+  render();
+};
+
+window.setElement = function(el){
+  heroP.element = el;
+  const elData = MAGE_ELEMENTS[el];
+  heroData.ab1Name = elData.ab1;
+  heroData.ab2Name = elData.ab2;
+  heroData.color   = elData.color;
+  saveProgress(progress);
+  render();
+};
+
+window.startDungeon = function(){
+  // Сохраняем выбранного героя и флаг запуска подземелья
+  localStorage.setItem('kia_chosen_hero', heroKey);
+  localStorage.setItem('kia_start_dungeon', heroKey);
+  location.href = 'index.html';
+};
+
+window.trainHero = function(tier){
+  const plans={
+    1:{cost:50,xp:40},
+    2:{cost:120,xp:110},
+    3:{cost:260,xp:260},
+  };
+  const plan=plans[tier]||plans[1];
+  if(heroP.coins<plan.cost){
+    toast(`Нужно ${plan.cost} 🪙, доступно ${heroP.coins}`);
+    return;
+  }
+  heroP.coins-=plan.cost;
+  heroP.xp+=plan.xp;
+  let lvup=0;
+  while(heroP.xp>=xpForLevel(heroP.level)){
+    heroP.xp-=xpForLevel(heroP.level);
+    heroP.level++;
+    heroP.sp++;
+    lvup++;
+  }
+  saveProgress(progress);
+  if(lvup>0) toast(`Тренировка успешна! Уровней: +${lvup}`);
+  else toast('Тренировка завершена: XP получен');
+  render();
+};
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+// ─────────────────────────────────────────────────
+// Инициализация
+// ─────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>

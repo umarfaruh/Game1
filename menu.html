@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Победа или смерть</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Manrope:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  html, body {
+    width:100%; height:100%;
+    background:#000;
+    overflow:hidden;
+    font-family:'Manrope', sans-serif;
+  }
+
+  /* ─── Фоновый холст с частицами ─── */
+  #bgCanvas {
+    position:fixed; inset:0;
+    width:100%; height:100%;
+    z-index:0;
+  }
+
+  /* ─── Основной контейнер ─── */
+  .scene {
+    position:relative; z-index:1;
+    width:100%; height:100%;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:0;
+  }
+
+  /* ─── Верхняя заставка ─── */
+  .emblem {
+    width:110px; height:110px;
+    margin-bottom:22px;
+    filter:drop-shadow(0 0 28px #c8922a);
+    animation: emblemPulse 3s ease-in-out infinite;
+  }
+  @keyframes emblemPulse {
+    0%,100%{ filter:drop-shadow(0 0 28px #c8922a); transform:scale(1); }
+    50%     { filter:drop-shadow(0 0 48px #ffd97a); transform:scale(1.06); }
+  }
+
+  /* ─── Название игры ─── */
+  .game-title {
+    font-family:'Cinzel', serif;
+    font-weight:900;
+    font-size: clamp(2.4rem, 7vw, 5.2rem);
+    line-height:1.1;
+    text-align:center;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    background: linear-gradient(160deg, #fff8e1 0%, #f5c842 40%, #e07b00 75%, #7a1900 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text;
+    filter: drop-shadow(0 0 22px rgba(200,120,0,.7));
+    animation: titleGlow 4s ease-in-out infinite;
+    padding:0 16px;
+  }
+  @keyframes titleGlow {
+    0%,100%{ filter:drop-shadow(0 0 18px rgba(200,120,0,.6)); }
+    50%     { filter:drop-shadow(0 0 38px rgba(255,200,60,.9)); }
+  }
+
+  .title-sub {
+    font-family:'Cinzel', serif;
+    font-weight:400;
+    font-size: clamp(0.9rem, 2.5vw, 1.3rem);
+    letter-spacing:0.35em;
+    text-transform:uppercase;
+    color:#9b7030;
+    margin-top:10px;
+    margin-bottom:48px;
+    text-align:center;
+    opacity:.9;
+  }
+
+  /* ─── Кнопка ─── */
+  .btn-start {
+    display:inline-flex; align-items:center; gap:12px;
+    background: linear-gradient(135deg, #3d1a00 0%, #7a3500 50%, #3d1a00 100%);
+    border:2px solid #c8922a;
+    border-radius:6px;
+    color:#ffe8b0;
+    font-family:'Cinzel', serif;
+    font-weight:700;
+    font-size: clamp(1rem, 3vw, 1.4rem);
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    padding:18px 48px;
+    cursor:pointer;
+    text-decoration:none;
+    position:relative;
+    overflow:hidden;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 0 24px rgba(200,120,0,.4), inset 0 1px 0 rgba(255,220,100,.15);
+  }
+  .btn-start::before {
+    content:'';
+    position:absolute; inset:0;
+    background:linear-gradient(90deg, transparent 0%, rgba(255,200,80,.18) 50%, transparent 100%);
+    transform:translateX(-110%);
+    transition:transform .5s;
+  }
+  .btn-start:hover { transform:scale(1.04); box-shadow:0 0 40px rgba(255,160,30,.6), inset 0 1px 0 rgba(255,220,100,.25); }
+  .btn-start:hover::before { transform:translateX(110%); }
+  .btn-start:active { transform:scale(0.97); }
+
+  /* ─── Разделитель ─── */
+  .divider {
+    width:280px; max-width:70%;
+    height:1px;
+    background:linear-gradient(90deg, transparent, #c8922a, transparent);
+    margin:42px 0 32px;
+  }
+
+  /* ─── Нижний копирайт ─── */
+  .footer {
+    position:fixed; bottom:20px;
+    left:0; right:0;
+    text-align:center;
+    font-size:0.75rem;
+    color:#4a3010;
+    letter-spacing:0.15em;
+    z-index:2;
+  }
+
+  /* ─── Мобайл ─── */
+  @media (max-width:480px){
+    .emblem { width:80px; height:80px; }
+    .btn-start { padding:15px 36px; }
+    .title-sub { margin-bottom:36px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<div class="scene">
+  <!-- Эмблема меча + щита -->
+  <svg class="emblem" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="55" cy="55" r="50" stroke="#c8922a" stroke-width="2" opacity="0.4"/>
+    <circle cx="55" cy="55" r="42" stroke="#c8922a" stroke-width="1" opacity="0.25"/>
+    <!-- Меч вертикальный -->
+    <line x1="55" y1="14" x2="55" y2="82" stroke="#e8b84b" stroke-width="3.5" stroke-linecap="round"/>
+    <polygon points="55,9 51,20 59,20" fill="#f5c842"/>
+    <!-- Гарда -->
+    <line x1="40" y1="36" x2="70" y2="36" stroke="#c8922a" stroke-width="4" stroke-linecap="round"/>
+    <!-- Рукоять -->
+    <rect x="52.5" y="82" width="5" height="14" rx="2" fill="#a06820"/>
+    <!-- Крылья/щит мотив -->
+    <path d="M30 55 Q18 45 22 30 Q38 38 40 55 Z" fill="rgba(200,120,20,0.18)" stroke="#c8922a" stroke-width="1.2"/>
+    <path d="M80 55 Q92 45 88 30 Q72 38 70 55 Z" fill="rgba(200,120,20,0.18)" stroke="#c8922a" stroke-width="1.2"/>
+    <!-- Череп снизу -->
+    <circle cx="55" cy="91" r="6" fill="rgba(200,120,20,0.3)" stroke="#c8922a" stroke-width="1"/>
+    <circle cx="52.5" cy="90" r="1.4" fill="#c8922a"/>
+    <circle cx="57.5" cy="90" r="1.4" fill="#c8922a"/>
+    <line x1="52" y1="93.5" x2="58" y2="93.5" stroke="#c8922a" stroke-width="1" stroke-linecap="round"/>
+  </svg>
+
+  <h1 class="game-title">Победа<br>или смерть</h1>
+  <p class="title-sub">Арена · Подземелья · Слава</p>
+
+  <a href="index.html" class="btn-start">
+    ⚔&nbsp;&nbsp;Начать играть
+  </a>
+
+  <div class="divider"></div>
+</div>
+
+<p class="footer">КЛИНОК И АРКАНА &nbsp;·&nbsp; Победа или Смерть</p>
+
+<script>
+// ── Генератор частиц / звёзд ──────────────────────────────────
+(function(){
+  const cvs = document.getElementById('bgCanvas');
+  const ctx = cvs.getContext('2d');
+  let W, H;
+  const N = 140;
+  const stars = [];
+
+  function resize(){
+    W = cvs.width  = window.innerWidth;
+    H = cvs.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  for(let i=0;i<N;i++){
+    stars.push({
+      x: Math.random()*W,
+      y: Math.random()*H,
+      r: Math.random()*1.6+0.2,
+      a: Math.random(),
+      da: (Math.random()-0.5)*0.008,
+      vy: -Math.random()*0.25-0.05,
+      vx: (Math.random()-0.5)*0.06,
+    });
+  }
+
+  // Ember particles (orange embers rising from bottom)
+  const embers = [];
+  function spawnEmber(){
+    embers.push({
+      x: Math.random()*W,
+      y: H + 10,
+      r: Math.random()*2.2+0.5,
+      a: 0.7 + Math.random()*0.3,
+      vy: -(Math.random()*0.8+0.4),
+      vx: (Math.random()-0.5)*0.5,
+      life: 1,
+      decay: Math.random()*0.003+0.001,
+      hue: 20+Math.random()*30,
+    });
+  }
+
+  let emberTimer = 0;
+
+  function draw(ts){
+    requestAnimationFrame(draw);
+    ctx.fillStyle = 'rgba(4,2,8,0.18)';
+    ctx.fillRect(0,0,W,H);
+
+    // Draw stars
+    stars.forEach(function(s){
+      s.x += s.vx; s.y += s.vy; s.a += s.da;
+      if(s.a<0.05) s.da=Math.abs(s.da);
+      if(s.a>1)    s.da=-Math.abs(s.da);
+      if(s.y < -5){ s.y=H+5; s.x=Math.random()*W; }
+      ctx.globalAlpha = s.a;
+      ctx.fillStyle = '#ffe8b0';
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
+    });
+
+    // Draw embers
+    emberTimer += 16;
+    if(emberTimer > 80){ emberTimer=0; spawnEmber(); if(Math.random()<0.3) spawnEmber(); }
+    for(let i=embers.length-1;i>=0;i--){
+      const e=embers[i];
+      e.x+=e.vx; e.y+=e.vy; e.life-=e.decay;
+      if(e.life<=0){ embers.splice(i,1); continue; }
+      ctx.globalAlpha = e.a*e.life;
+      ctx.fillStyle = `hsl(${e.hue},100%,65%)`;
+      ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,Math.PI*2); ctx.fill();
+    }
+
+    ctx.globalAlpha = 1;
+
+    // Radial vignette
+    const grad = ctx.createRadialGradient(W/2,H/2,H*0.1,W/2,H/2,H*0.85);
+    grad.addColorStop(0,'transparent');
+    grad.addColorStop(1,'rgba(0,0,0,0.72)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,W,H);
+  }
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
